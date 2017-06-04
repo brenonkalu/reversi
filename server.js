@@ -567,27 +567,29 @@ function create_new_game() {
 function send_game_update(socket, game_id, message) {
 
 	/*check to see if a game with game_id already exists*/
-if(('undefined' === typeof games[game_id]) || !games[game_id]) {
+	if(('undefined' === typeof games[game_id]) || !games[game_id]) {
 	/*no game exists, so make one*/
-	console.log('No game exists. Creating '+game_id+' for '+socket.id);
+	console.log('No game exists. Creating ' +game_id+' for '+socket.id);
 	games[game_id] = create_new_game();
-}
+	}
 
 	/*make sure that only 2 people are in the game room*/
 	/*assign this socket a color*/
+
+
 	/*send game updates*/
-var success_data = {
+	var success_data = {
 					result: 'success',
 					game: games[game_id],
 					message: message,
 					game_id: game_id
 					};
-					
-io.in(game_id).emit('game_upate',success_data);
 
-}
+	io.in(game_id).emit('game_update',success_data);
 
 	/*check to see if the game is over*/
+
+}
 
 
 
