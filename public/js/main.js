@@ -209,6 +209,7 @@ function send_message() {
 	payload.message = $('#send_message_holder').val();
 	console.log('*** Client Log Message: \'send_message\' payload: '+JSON.stringify(payload));
 	socket.emit('send_message',payload);
+	$('#send_message_holder').val('');
 }
 
 socket.on('send_message_response',function(payload) {
@@ -263,6 +264,9 @@ $(function() {
 
 	console.log('*** Client Log Message: \'join_room\' payload: '+JSON.stringify(payload));
 	socket.emit('join_room',payload);
+
+	$('#quit').append('<a href="lobby.html?username='+username+'" class="btn btn-danger btn-default active" role="button" aria-pressed="true">Quit</a>');
+
 });
 
 var old_board = [
@@ -275,6 +279,8 @@ var old_board = [
 					['?','?','?','?','?','?','?','?'],
 					['?','?','?','?','?','?','?','?']
 				];
+
+var my_color = ' ';
 
 socket.on('game_update',function(payload){
 	console.log('*** Client Log Message: \'game_update\'\n\t payload: '+JSON.stringify(payload));
@@ -293,12 +299,38 @@ socket.on('game_update',function(payload){
 	}
 
 	/*update my color*/
+	if(socket.id == payload.game.player_white.socket) {
+		my_color = 'white';
+		}
+		else if(socket.id == payload.game.player_black.socket) {
+			my_color = 'black';
+		}
+		else {
+			/*three people in the room*/
+			/*send client back to the lobby*/
+			window.location.href = 'lobby.html?username='+username;
+			return;
+		}
+
+		$('#my_color').html('<h3 id="my_color">I am '+my_color+'</h3>');
 
 	/*animate changes to the board*/
+
+	var blacksum = 0;
+	var whitesum = 0;
 
 	var row,column;
 	for(row = 0; row < 8; row++) {
 		for(column = 0; column < 8; column++) {
+
+			if(board[row][column] == 'b') {
+				blacksum++;
+			}
+
+			if(board[row][column] == 'w') {
+				whitesum++;
+			}
+
 			/*if a board space has changed*/
 			if(old_board[row][column] != board [row][column]) {
 				if (old_board[row][column] == '?' && board[row][column] == ' ') {
@@ -331,14 +363,56 @@ socket.on('game_update',function(payload){
 				else {
 					$('#'+row+'_'+column).html('<img src="assets/images/error.gif" alt="error"/>');
 				}
+
+				/*set up interactivity*/
+				$('#'+row+'_'+column).off('click');
+				if(board[row][column] == ' ') {
+					$('#'+row+'_'+column).addClass('hovered_over');
+					$('#'+row+'_'+column).click(function(r,c) {
+						return function() {
+							var payload = {};
+							payload.row = r;
+							payload.column = c;
+							payload.color = my_color;
+							console.log('*** CLient Log Message: \'play_token\' payload: '+JSON.stringify(payload));
+							socket.emit('play_token',payload);
+						};
+					}(row,column));
+				}
+				else{
+					$('#'+row+'_'+column).removeClass('hovered_over');
+				}
 			}
 		}
 	}
+	$('#blacksum').html(blacksum);
+	$('#whitesum').html(whitesum);
+
 	old_board = board;
 });
 
+socket.on('play_token_response',function(payload){
+	console.log('*** Client Log Message: \'play_token_response\'\n\t payload: '+JSON.stringify(payload));
+	/*check for a good play_token_response update*/
+	if(payload.result == 'fail') {
+		console.log(payload.message);
+		alert(payload.message);
+		return;
+	}
+});
 
+socket.on('game_over',function(payload){
+	console.log('*** Client Log Message: \'game_over\'\n\t payload: '+JSON.stringify(payload));
+	/*check for a good play_token_response update*/
+	if(payload.result == 'fail') {
+		console.log(payload.message);
+		return;
+	}
 
+	/*jump to a new page*/
+	$('#game_over').html('<h1>Game Over</h1><h2>'+payload.who_won+' won!</h2>');
+	$('#game_over').append('<a href="lobby.html?username='+username+'" class="btn btn-success btn-lg active" role="button" aria-pressed="true">Return to the lobby</a>');
+});
 
 
 
