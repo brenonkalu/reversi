@@ -87,7 +87,7 @@ socket.on('join_room_response',function(payload) {
 	}
 
 /*manage the message that a new user has joined*/
-	var newHTML = '<p>'+payload.username+' just entered the lobby</p>';
+	var newHTML = '<p>'+payload.username+' just entered</p>';
 	var newNode = $(newHTML);
 	newNode.hide();
 	$('#messages').append(newNode);
