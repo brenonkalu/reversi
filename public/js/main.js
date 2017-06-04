@@ -115,7 +115,7 @@ socket.on('player_disconnected',function(payload) {
 	}
 
 /*manage the message that  player has left*/
-	var newHTML = '<p>'+payload.username+' has left the lobby</p>';
+	var newHTML = '<p>'+payload.username+' has left</p>';
 	var newNode = $(newHTML);
 	newNode.hide();
 	$('#messages').append(newNode);
@@ -374,7 +374,7 @@ socket.on('game_update',function(payload){
 							payload.row = r;
 							payload.column = c;
 							payload.color = my_color;
-							console.log('*** CLient Log Message: \'play_token\' payload: '+JSON.stringify(payload));
+							console.log('*** Client Log Message: \'play_token\' payload: '+JSON.stringify(payload));
 							socket.emit('play_token',payload);
 						};
 					}(row,column));
